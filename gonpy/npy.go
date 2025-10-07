@@ -9,15 +9,23 @@ import (
     "strconv"
     "strings"
 )
-type numeric interface  {
+type Numeric interface  {
     int8    | int16   | int32   | int64   |
     uint8   | uint16  | uint32  | uint64  |
     float32 | float64
 }
-type NpyData[T numeric] struct {
+type NpyData[T Numeric] struct {
     fortranOrder bool
     shape []uint64
     data []T
+}
+
+func (nd *NpyData[T]) Data() []T {
+    return nd.data
+}
+
+func (nd *NpyData[T]) Shape() []uint64 {
+    return nd.shape
 }
 
 // For now, only supporting rectangular ND arrays
@@ -310,7 +318,7 @@ func parseDtype(dtype string) (any, error) {
 
 }
 
-func ParseData[T numeric](data io.Reader) (NpyData[T], error){
+func ParseData[T Numeric](data io.Reader) (NpyData[T], error){
     var RetVal NpyData[T]
     // Check initial magic string
     magicString := []byte("\x93NUMPY")
