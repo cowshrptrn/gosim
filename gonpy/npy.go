@@ -148,19 +148,19 @@ func isBigEndianToByteOrder(isBigEndian bool) binary.ByteOrder {
 }
 
 func parseSignedInt8(value *int8, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseSignedInt16(value *int16, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseSignedInt32(value *int32, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseSignedInt64(value *int64, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseSignedIntFunc(size int, isBigEndian bool) (any, error) {
@@ -187,19 +187,19 @@ func parseSignedIntFunc(size int, isBigEndian bool) (any, error) {
 
 
 func parseUnignedInt8(value *uint8, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseUnignedInt16(value *uint16, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseUnsignedInt32(value *uint32, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseUnsignedInt64(value *uint64, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseUnsignedIntFunc(size int, isBigEndian bool) (any, error) {
@@ -225,7 +225,7 @@ func parseUnsignedIntFunc(size int, isBigEndian bool) (any, error) {
 }
 
 func parseFloat32(value *float32, isBigEndian bool, reader io.Reader) error {
-    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), &value)
+    return binary.Read(reader, isBigEndianToByteOrder(isBigEndian), value)
 }
 
 func parseFloat64(value *float64, isBigEndian bool, reader io.Reader) error {
@@ -262,7 +262,7 @@ func parseDtype(dtype string) (any, error) {
         isBigEndian = true
     }
 
-    if strings.Contains("><=", string(dtype[currOffset])) {
+    if strings.Contains("><=|", string(dtype[currOffset])) {
         currOffset += 1
     }
 
@@ -282,20 +282,18 @@ func parseDtype(dtype string) (any, error) {
 
     // float, int, and uint all default to 32bit
     // This number is the number of BYTES, not BITS
-    // Support 4,8,and 16 bytes
+    // Support 8, 16, 32, and 64 bit numbers
     byteness := 4
-    if strings.Contains("248", string(dtype[len(dtype) - 1])) {
-        switch dtype[len(dtype) - 1] {
-        case '2':
-            byteness = 2
-        case '4':
-            byteness = 4
-        case '8':
-            byteness = 8
-        default: 
-            err := errors.New("Unrecognized size")
+    sizeStr := string(dtype[len(dtype) - 1])
+    if strings.Contains("1248", sizeStr) {
+        var err error
+        byteness, err = strconv.Atoi(sizeStr)
+        if err != nil {
             return nil, err
         }
+    } else {
+        err := fmt.Errorf("Unrecognized size: %v", sizeStr)
+        return nil, err
     }
 
     switch numericType {
