@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func runBaseCase[T numeric](t *testing.T, filePath string, totalElms uint64, mod int) {
+func runBaseCase[T Numeric](t *testing.T, filePath string, totalElms uint64, mod int) {
 	testFile, err := os.Open(filePath)
 	if err != nil {
 		t.Fatalf("Failed to open file with error %v", err.Error())
